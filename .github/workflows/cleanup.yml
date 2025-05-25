@@ -1,0 +1,22 @@
+name: Cleanup Docker Images
+
+on:
+  schedule:
+    - cron: '0 3 * * 0' # Runs every Sunday at 3AM UTC
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+
+    steps:
+      - name: Delete old Docker images from GHCR
+        uses: actions/delete-package-versions@v4
+        with:
+          package-name: ${{ github.repository }}
+          package-type: container
+          min-versions-to-keep: 3
+          token: ${{ secrets.GHCR_PAT }}
