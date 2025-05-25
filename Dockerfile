@@ -1,4 +1,4 @@
-FROM golang:1.21
+FROM golang:1.21.4
 
 # Set destination for COPY
 WORKDIR /app
@@ -12,7 +12,7 @@ RUN go mod download
 COPY *.go ./
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o /smart_scale
+RUN CGO_ENABLED=0 GOOS=linux go build -o /auto_scale
 
 # Optional:
 # To bind to a TCP port, runtime parameters must be supplied to the docker command.
@@ -22,4 +22,4 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /smart_scale
 EXPOSE 8080
 
 # Run
-CMD ["/smart_scale"]
+CMD ["/auto_scale"]

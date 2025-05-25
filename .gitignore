@@ -30,4 +30,4 @@ go.work.sum
 # Editor/IDE
 # .idea/
 .vscode/
-smart_scale
+auto_scale
