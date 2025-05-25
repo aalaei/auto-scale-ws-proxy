@@ -1,25 +1,29 @@
-FROM golang:1.21.4
+# Build stage
+FROM golang:1.21.4-alpine AS builder
 
-# Set destination for COPY
+# Install git (needed for go modules sometimes)
+RUN apk add --no-cache git
+
 WORKDIR /app
 
-# Download Go modules
+# Copy and download modules first (cache dependencies)
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy the source code. Note the slash at the end, as explained in
-# https://docs.docker.com/reference/dockerfile/#copy
+# Copy source code
 COPY *.go ./
 
-# Build
+# Build statically linked binary for Linux (alpine-based)
 RUN CGO_ENABLED=0 GOOS=linux go build -o /auto_scale
 
-# Optional:
-# To bind to a TCP port, runtime parameters must be supplied to the docker command.
-# But we can document in the Dockerfile what ports
-# the application is going to listen on by default.
-# https://docs.docker.com/reference/dockerfile/#expose
+# Final stage: minimal image with just the binary
+FROM scratch
+
+# Copy binary from builder stage
+COPY --from=builder /auto_scale /auto_scale
+
+# Expose port 8080
 EXPOSE 8080
 
-# Run
+# Run the binary
 CMD ["/auto_scale"]
