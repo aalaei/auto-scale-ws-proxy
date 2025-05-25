@@ -24,7 +24,7 @@ var (
 	kubeNamespace     = getEnv("NAMESPACE", "test")
 	deploymentName    = getEnv("DEPLOYMENT_NAME", "t2")
 	inactivityMinutes = getEnvAsInt("INACTIVITY_MINUTES", 60)
-	ReplicaUpdateIntervalHours = getEnvAsInt("REPLICA_UPDATE_INTERVAL", 24) // in hours
+	ReplicaUpdateIntervalHours = getEnvAsInt("REPLICA_UPDATE_INTERVAL_HOURS", 24) // in hours
 	backendHealthCheckInterval = getEnvAsInt("BACKEND_HEALTH_CHECK_INTERVAL", 10) // in minutes
 
 	lastScaledReplicas int = -1 // -1 means unknown/uninitialized
