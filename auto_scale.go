@@ -144,9 +144,6 @@ func scaleDeployment(replicas int) error {
 		mu.Unlock()
 		return nil
 	}
-	lastScaleRequestTime = time.Now()
-	lastBackEndTime = time.Time{} // reset backend health check time
-	lastScaledReplicas = replicas
 	mu.Unlock()
 	token := os.Getenv("KUBE_CLUSTER_TOKEN")
 	if token == "" {
@@ -187,6 +184,9 @@ func scaleDeployment(replicas int) error {
 	}
 
 	log.Printf("Deployment scaled to %d replicas\n", replicas)
+	lastScaleRequestTime = time.Now()
+	lastBackEndTime = time.Time{} // reset backend health check time
+	lastScaledReplicas = replicas
 	return nil
 }
 
