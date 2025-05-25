@@ -19,6 +19,8 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /auto_scale
 # Final stage: minimal image with just the binary
 FROM scratch
 
+# Copy CA certificates from the builder stage
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 # Copy binary from builder stage
 COPY --from=builder /auto_scale /auto_scale
 

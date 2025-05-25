@@ -1,7 +1,9 @@
 services:
   auto-scale-ws-proxy:
-    image: ghcr.io/aalaei/auto-scale-ws-proxy:latest
+    image: ghcr.io/aalaei/auto-scale-ws-proxy:main
     environment:
       - REPLICA_UPDATE_INTERVAL_HOURS=24
     ports:
       - "8080:8080"
+    env_file:
+      - .env
