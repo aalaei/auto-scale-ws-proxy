@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
-	// "net"
+	"crypto/tls"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -70,6 +70,12 @@ func handleWebSocketProxy(w http.ResponseWriter, r *http.Request) {
 	}
 
 	proxy := httputil.NewSingleHostReverseProxy(target)
+	// Customize the Transport to skip TLS verification
+	proxy.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
 
 	// Fix WebSocket upgrade headers
 	director := proxy.Director
@@ -92,7 +98,7 @@ func handleWebSocketProxy(w http.ResponseWriter, r *http.Request) {
 
 func isBackendUp() bool {
 	if time.Since(lastBackEndTime) < time.Minute* time.Duration(backendHealthCheckInterval) {
-		log.Println("Using cached backend status")
+		// log.Println("Using cached backend status")
 		return true
 	}
 	req, err := http.NewRequest("GET", backendTargetURL, nil)
