@@ -23,6 +23,7 @@ docker run -e SECRET_PATH=/vmessws \
 | `LISTEN_ADDR`           | Address to listen on             | `:8080`                  |
 | `SECRET_PATH`           | Path to receive WebSocket        | `/vmessws`               |
 | `BACKEND_URL`           | Backend service URL              | `http://127.0.0.1:3001`  |
+| `BACKEND_PATH`          | Backend WebSocket Path           | `/ws`                    |
 | `KUBE_CLUSTER_ENDPOINT` | Kubernetes API endpoint          | *(required)*             |
 | `KUBE_CLUSTER_TOKEN`    | Bearer token for Kubernetes auth| *(required)*             |
 | `NAMESPACE`             | Kubernetes namespace             | `test`                   |

@@ -19,6 +19,7 @@ import (
 var (
 	listenAddr        = getEnv("LISTEN_ADDR", ":8080")
 	secretPath        = getEnv("SECRET_PATH", "/vmessws")
+	backendPath	   	  = getEnv("BACKEND_PATH", "/ws")
 	backendTargetURL  = getEnv("BACKEND_URL", "http://127.0.0.1:3001")
 	kubeClusterAPI    = getEnv("KUBE_CLUSTER_ENDPOINT", "https://kubernetes.default.svc")
 	kubeNamespace     = getEnv("NAMESPACE", "test")
@@ -38,6 +39,7 @@ var (
 
 func main() {
 	log.Printf("Smart WebSocket Proxy with Kubernetes auto-scaler starting [%s%s]...\n", listenAddr, secretPath)
+	log.Printf("Backend URL: %s on %s path\n", backendTargetURL, backendPath)
 
 	lastRequestTime = time.Now()
 	lastScaleRequestTime = time.Time{}
@@ -81,9 +83,10 @@ func handleWebSocketProxy(w http.ResponseWriter, r *http.Request) {
 	director := proxy.Director
 	proxy.Director = func(req *http.Request) {
 		director(req)
+		req.URL.Path = backendPath // Change to the backend's actual WebSocket path
 		req.Header.Set("Connection", "Upgrade")
 		req.Header.Set("Upgrade", "websocket")
-		req.Host = target.Host // very important!
+		req.Host = target.Host // Ensure the Host is set to backend's host
 	}
 	proxy.ModifyResponse = func(resp *http.Response) error {
 		return nil
@@ -108,7 +111,7 @@ func isBackendUp() bool {
 	}
 
 	// Important: vmess path must match exactly
-	req.URL.Path = secretPath
+	req.URL.Path = backendPath
 
 	// Avoid redirects
 	client := &http.Client{
@@ -143,14 +146,16 @@ func isBackendUp() bool {
 
 
 func scaleDeployment(replicas int) error {
-	mu.Lock()
+	log.Printf("Deployment tried scaled to %d replicas\n", replicas)
+	// mu.Lock()
 	// if lastScaledReplicas == replicas and it was less than a day since update, we don't need to scale again
 	if (lastScaledReplicas == replicas && time.Since(lastScaleRequestTime) < time.Duration(ReplicaUpdateIntervalHours)*time.Hour) {
 		log.Printf("Scale unchanged: already at %d replicas\n", replicas)
-		mu.Unlock()
+		// mu.Unlock()
 		return nil
 	}
-	mu.Unlock()
+	// mu.Unlock()
+	log.Printf("Deployment scaled to %d replicas\n", replicas)
 	token := os.Getenv("KUBE_CLUSTER_TOKEN")
 	if token == "" {
 		return fmt.Errorf("KUBE_CLUSTER_TOKEN not set")
@@ -204,7 +209,10 @@ func inactivityWatcher() {
 		mu.Lock()
 		if time.Since(lastRequestTime) >= time.Duration(inactivityMinutes)*time.Minute {
 			log.Println("No traffic for a while. Scaling down deployment...")
-			scaleDeployment(0)
+			if err := scaleDeployment(0); err != nil {
+				log.Println("Error scaling down deployment:", err)
+				return
+			}
 		}
 		mu.Unlock()
 	}
