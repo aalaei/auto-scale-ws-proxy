@@ -202,7 +202,7 @@ func scaleDeployment(replicas int) error {
 }
 
 func inactivityWatcher() {
-	ticker := time.NewTicker(10 * time.Minute)
+	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
 
 	for range ticker.C {
